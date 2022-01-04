@@ -11,7 +11,7 @@ module: gitlab_merge_request_comment
 short_description: write messages to gitlab merge requests
 description:
   - write messages to gitlab merge requests.
-  - works only if `CI_MERGE_REQUEST_IID` is defined
+  - works only if `CI_OPEN_MERGE_REQUESTS` is defined
   - it's designed to run inside gitlab ci/cd pipeline
 version_added: "1.0.0"
 author:
@@ -64,10 +64,11 @@ def main():
     api_url = module.params.get("api_url")
     api_token = module.params.get("api_token") or os.environ.get('ANSIBLE_GITLAB_API_TOKEN')
 
-    mr_id = os.environ.get('CI_MERGE_REQUEST_IID')
+    _mr_id = os.environ.get('CI_OPEN_MERGE_REQUESTS')
 
-    if mr_id and api_token:
-        pr_id = os.environ.get('CI_MERGE_REQUEST_PROJECT_ID')
+    if _mr_id and api_token:
+        mr_id = _mr_id.split('!')[-1]
+        pr_id = os.environ.get('CI_PROJECT_ID')
         gitlab_mr_url = f'https://{api_url}/api/v4/projects/{pr_id}/merge_requests/{mr_id}/notes'
 
         headers = {
